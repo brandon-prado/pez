@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <link rel="stylesheet" media="all" href="style.css" />
+  <style>
+    /* Estilo para el fondo de la página */
+    body {
+      background-color: #FFFFE0;
+      /* Amarillo claro */
+    }
+
+    /* Estilo para centrar el título */
+    h1 {
+      text-align: center;
+      font-family: 'Arial Round', sans-serif;
+      /* Cambia 'NOMBRE DE TU FUENTE' por el nombre de la fuente que descargaste o enlazaste */
+    }
+
+    /* Estilo para centrar los botones e imagen */
+    .button-container {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* Estilo para los botones con separación */
+    .custom-button {
+      margin-top: 10px;
+      /* Espacio superior para separación */
+    }
+
+    /* Estilo para el label de valor retornado */
+    #responseValue {
+      opacity: 1;
+      /* Asegura que la opacidad sea 1 (completamente visible) */
+      visibility: visible;
+      color: white;
+      /* Cambia el color del texto si es necesario */
+      font-family: 'Arial Round', sans-serif;
+      /* Cambia 'NOMBRE DE TU FUENTE' por la fuente que prefieras */
+      font-size: 24px;
+      /* Tamaño del texto del label */
+      margin-top: 20px;
+      /* Espacio superior para separación del label */
+    }
+
+    /* Estilo para el label de informacion */
+    #labelInformacion {
+      opacity: 1;
+      /* Asegura que la opacidad sea 1 (completamente visible) */
+      visibility: visible;
+      color: white;
+      /* Cambia el color del texto si es necesario */
+      font-family: 'Arial Round', sans-serif;
+      /* Cambia 'NOMBRE DE TU FUENTE' por la fuente que prefieras */
+      font-size: 24px;
+      /* Tamaño del texto del label */
+      margin-top: 20px;
+      /* Espacio superior para separación del label */
+      text-decoration: underline;
+    }
+
+    /* Estilo para el modal */
+    .modal {
+      display: none;
+      /* Oculta el modal por defecto */
+      position: fixed;
+      z-index: 1;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0, 0, 0, 0.4);
+    }
+
+    /* Estilo para el contenido del modal */
+    .modal-content {
+      background-color: #fefefe;
+      margin: 15% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 80%;
+    }
+
+    /* Estilo para el botón de cerrar del modal */
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+    }
+
+    .close:hover,
+    .close:focus {
+      color: black;
+      text-decoration: none;
+      cursor: pointer;
+    }
+  </style>
+
+  <script>
+    var accessToken = "32c87f834fe3f4b89fab39185a62f236d245d7b0";
+    var deviceID = "380035000c47343438323536";
+    var urlAlimentar = "https://api.particle.io/v1/devices/" + deviceID + "/alimentar";
+    var urlProgAlimentar = "https://api.particle.io/v1/devices/" + deviceID + "/progAlimentar";
+
+    function obtenerFechaYHora() {
+      var currentTime = new Date();
+      var hora = currentTime.getHours();
+      var minuto = currentTime.getMinutes();
+      var dia = currentTime.getDate();
+      var mes = currentTime.getMonth() + 1;
+      var anio = currentTime.getFullYear();
+      var timeString = dia + "/" + mes + "/" + anio + " " + hora + ":" + (minuto < 10 ? "0" + minuto : minuto);
+
+      return timeString;
+    }
+
+
+    function AlimentarAhora() {
+      var horaEjecucion = obtenerFechaYHora();
+
+      $.post(urlAlimentar, { params: "alimentar", access_token: accessToken })
+        .done(function (response) {
+
+          console.log("Respuesta return: ", response.return_value);
+          // Actualizar el valor en el label
+          $("#responseValue").text("[" + horaEjecucion + "] ✅ El pez 🐠 ha sido alimentado de manera manual correctamente → Valor retornado: " + response.return_value);
+          // Cambiar la imagen a foco encendido
+          //$("#focoImagen").attr("src", "encendido.jpeg");
+
+        })
+
+        .fail(function (xhr, status, error) {
+          console.log("Error en la petición:", status, error);
+          $("#responseValue").text("🆘 Error, el pez 🐠 no se pudo alimentar → Consulta la consola para conocer el error");
+        });
+    }
+
+    function ProgramarAlimento(horaD, minutoD, diaD, mesD, anioD) {
+      var horaEjecucion = obtenerFechaYHora();
+      var horaProgramada = `${diaD}/${mesD}/${anioD} ${horaD}:${minutoD}`;
+
+      var params = {
+        command: horaD + "," + minutoD + "," + diaD + "," + mesD + "," + anioD,
+        access_token: accessToken
+      };
+
+      $.post(urlProgAlimentar, params)
+        .done(function (response) {
+          //if(horaD == null  || minutoD == null || diaD == null || mesD == null || anioD == null){
+          console.log("Respuesta return: ", response.return_value);
+          $("#responseValue").text("[" + horaEjecucion + "] ✅ Se ha programado 🕘 correctamente la alimentación del pez 🐠 a la fecha y hora: (" + horaProgramada + ") → Valor retornado: " + response.return_value);
+          //$("#focoImagen").attr("src", "encendido.jpeg");
+          //}else{
+          // console.log("Números nulos, es necesario llenar todos los campos");
+          // $("#responseValue").text("🆘 Error, no se pudo programar la alimentación del pez 🐠 → Fecha incompleta");
+          // }
+
+        })
+        .fail(function (xhr, status, error) {
+          console.log("Error en la petición:", status, error);
+          $("#responseValue").text("🆘 Error, no se pudo programar la alimentación del pez 🐠 → Consulta la consola para conocer el error");
+        });
+    }
+
+
+
+
+    // Aquí va el código para mostrar/ocultar el modal y manejar el formulario
+
+    // Función para mostrar el modal cuando se hace clic en el botón
+    function mostrarModal() {
+      var modal = document.getElementById('modalForm');
+      modal.style.display = 'block';
+    }
+
+    // Función para ocultar el modal
+    function ocultarModal() {
+      var modal = document.getElementById('modalForm');
+      modal.style.display = 'none';
+    }
+
+    // Cuando el usuario haga clic fuera del modal, ciérralo
+    window.onclick = function (event) {
+      var modal = document.getElementById('modalForm');
+      if (event.target == modal) {
+        modal.style.display = 'none';
+      }
+    }
+
+    // Asignar evento al botón dentro del formulario modal para programar la alimentación
+    document.addEventListener('DOMContentLoaded', function () {
+      var modal = document.getElementById('modalForm');
+      var btnSubmit = modal.querySelector('input[type="submit"]');
+
+      // Acción cuando se haga clic en el botón "Programar" del formulario modal
+      btnSubmit.onclick = function (event) {
+        event.preventDefault(); // Evita que se envíe el formulario por defecto
+
+        var hora = document.getElementById('hora').value; // Obtiene la hora en formato 'HH:MM'
+        var fecha = document.getElementById('fecha').value; // Obtiene la fecha en formato 'YYYY-MM-DD'
+
+        // Separar la hora en horas y minutos
+        var [horaObtenida, minutoObtenido] = hora.split(':'); // Dividir la cadena en horas y minutos
+
+        // Convertir a números enteros si es necesario
+        var horaNumerica = parseInt(horaObtenida);
+        var minutoNumerico = parseInt(minutoObtenido);
+
+        // Obtener el día, mes y año de la fecha
+        var fechaObtenida = new Date(fecha); // Crear un objeto de fecha a partir de la cadena obtenida
+        var dia = fechaObtenida.getDate() + 1; // Obtener el día del mes (1-31)
+        var mes = fechaObtenida.getMonth() + 1; // Obtener el mes (0-11), sumar 1 para ajustar al formato (1-12)
+        var anio = fechaObtenida.getFullYear(); // Obtener el año (YYYY)
+
+        // Hacer algo con estos valores
+        console.log('Hora:', horaNumerica);
+        console.log('Minuto:', minutoNumerico);
+        console.log('Día:', dia);
+        console.log('Mes:', mes);
+        console.log('Año:', anio);
+
+        ocultarModal(); // Cierra el modal después de enviar el formulario
+        ProgramarAlimento(horaNumerica, minutoNumerico, dia, mes, anio);
+      };
+    });
+
+
+
+
+
+
+  </script>
+</head>
+
+<body>
+
+  <div class="btn-bg Pokemon">
+    <div class="btn-info">Alimentador de peces</div>
+    <img id="focoImagen" src="apagado.jpg" alt="Foco apagado" style="max-width: 400px; height: auto;">
+    <div class="btn-mention"><span>Selecciona la opción que deseas realizar:</span></div>
+    <div class="btn-group">
+      <div class="btn ball">
+        <button onclick="AlimentarAhora()">
+          <div class="pokemon-ball"></div><a>Alimentar ahora<span data-letters="Go!"></span><span
+              data-letters="Go!"></span></a>
+        </button>
+        <br><br>
+        <button onclick="mostrarModal()">
+          <div class="pokemon-ball"></div><a>Programar alimentación<span data-letters="Go!"></span><span
+              data-letters="Go!"></span></a>
+        </button>
+      </div>
+    </div>
+    <label id="labelInformacion">Información de la última ejecución: </label>
+    <label id="responseValue">❔ Sin ejecutar</label>
+  </div>
+  </div>
+
+
+
+  <div id="modalForm" class="modal">
+    <form id="scheduleForm" class="modal-content">
+      <span class="close">&times;</span>
+      <h2>Programar alimentación</h2>
+      <label for="hora">Hora:</label>
+      <input type="time" id="hora" name="hora" required><br><br>
+      <label for="fecha">Fecha:</label>
+      <input type="date" id="fecha" name="fecha" required><br><br>
+      <input type="submit" value="Programar">
+    </form>
+  </div>
+</body>
+
+<body>
+  <div class="btn-bg Pokemon">
+    <div class="btn-info"> <br>Acerca del proyecto<br></div>
+    <img id="ITS" src="ITS.png" alt="Foco apagado" style="max-width: 200px; height: auto;">
+    <div class="btn-mention"><span><br>SISTEMAS EMBEBIDOS<br><br>IMPARTIDA POR: <br>MC. JONAM LEONEL SÁNCHEZ CUEVAS.
+        <br><br> EQUIPO: A - Z<br>EIMY LU-RUHAMA CRUZ RODRÍGUEZ, 19051114.<br>BRANDON ALEXIS PRADO CASTRO,
+        19051178.<br>MARIO ORLANDO TORRES SALAZAR, 19051220.<br><br><br>Martes 28 de noviembre de 2023</span></div>
+  </div>
+  </div>
+</body>
+
+</html>
