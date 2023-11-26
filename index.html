@@ -4,18 +4,17 @@
 <head>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <link rel="stylesheet" media="all" href="style.css" />
+
   <style>
     /* Estilo para el fondo de la página */
     body {
       background-color: #FFFFE0;
-      /* Amarillo claro */
     }
 
     /* Estilo para centrar el título */
     h1 {
       text-align: center;
       font-family: 'Arial Round', sans-serif;
-      /* Cambia 'NOMBRE DE TU FUENTE' por el nombre de la fuente que descargaste o enlazaste */
     }
 
     /* Estilo para centrar los botones e imagen */
@@ -29,44 +28,32 @@
     /* Estilo para los botones con separación */
     .custom-button {
       margin-top: 10px;
-      /* Espacio superior para separación */
     }
 
     /* Estilo para el label de valor retornado */
     #responseValue {
       opacity: 1;
-      /* Asegura que la opacidad sea 1 (completamente visible) */
       visibility: visible;
       color: white;
-      /* Cambia el color del texto si es necesario */
       font-family: 'Arial Round', sans-serif;
-      /* Cambia 'NOMBRE DE TU FUENTE' por la fuente que prefieras */
       font-size: 24px;
-      /* Tamaño del texto del label */
       margin-top: 20px;
-      /* Espacio superior para separación del label */
     }
 
     /* Estilo para el label de informacion */
     #labelInformacion {
       opacity: 1;
-      /* Asegura que la opacidad sea 1 (completamente visible) */
       visibility: visible;
       color: white;
-      /* Cambia el color del texto si es necesario */
       font-family: 'Arial Round', sans-serif;
-      /* Cambia 'NOMBRE DE TU FUENTE' por la fuente que prefieras */
       font-size: 24px;
-      /* Tamaño del texto del label */
       margin-top: 20px;
-      /* Espacio superior para separación del label */
       text-decoration: underline;
     }
 
     /* Estilo para el modal */
     .modal {
       display: none;
-      /* Oculta el modal por defecto */
       position: fixed;
       z-index: 1;
       left: 0;
@@ -108,6 +95,7 @@
     var urlAlimentar = "https://api.particle.io/v1/devices/" + deviceID + "/alimentar";
     var urlProgAlimentar = "https://api.particle.io/v1/devices/" + deviceID + "/progAlimentar";
 
+    /* Función para obtener la fecha y hora para indicar la última ejecución a partir del botón seleccionado*/
     function obtenerFechaYHora() {
       var currentTime = new Date();
       var hora = currentTime.getHours();
@@ -120,60 +108,28 @@
       return timeString;
     }
 
-
+    /* Función para alimentar manualmente por medio del botón Alimentar ahora */
     function AlimentarAhora() {
       var horaEjecucion = obtenerFechaYHora();
 
       $.post(urlAlimentar, { params: "alimentar", access_token: accessToken })
-        .done(function (response) {
 
+        .done(function (response) {
           console.log("Respuesta return: ", response.return_value);
           // Actualizar el valor en el label
           $("#responseValue").text("[" + horaEjecucion + "] ✅ El pez 🐠 ha sido alimentado de manera manual correctamente → Valor retornado: " + response.return_value);
-          // Cambiar la imagen a foco encendido
-          //$("#focoImagen").attr("src", "encendido.jpeg");
-
         })
 
         .fail(function (xhr, status, error) {
+          // Actualizar el valor en el label e indica el error en consola
           console.log("Error en la petición:", status, error);
           $("#responseValue").text("🆘 Error, el pez 🐠 no se pudo alimentar → Consulta la consola para conocer el error");
         });
     }
 
-    function ProgramarAlimento(horaD, minutoD, diaD, mesD, anioD) {
-      var horaEjecucion = obtenerFechaYHora();
-      var horaProgramada = `${diaD}/${mesD}/${anioD} ${horaD}:${minutoD}`;
+    // Código para manejar el formulario de seleccion de fecha y hora
 
-      var params = {
-        command: horaD + "," + minutoD + "," + diaD + "," + mesD + "," + anioD,
-        access_token: accessToken
-      };
-
-      $.post(urlProgAlimentar, params)
-        .done(function (response) {
-          //if(horaD == null  || minutoD == null || diaD == null || mesD == null || anioD == null){
-          console.log("Respuesta return: ", response.return_value);
-          $("#responseValue").text("[" + horaEjecucion + "] ✅ Se ha programado 🕘 correctamente la alimentación del pez 🐠 a la fecha y hora: (" + horaProgramada + ") → Valor retornado: " + response.return_value);
-          //$("#focoImagen").attr("src", "encendido.jpeg");
-          //}else{
-          // console.log("Números nulos, es necesario llenar todos los campos");
-          // $("#responseValue").text("🆘 Error, no se pudo programar la alimentación del pez 🐠 → Fecha incompleta");
-          // }
-
-        })
-        .fail(function (xhr, status, error) {
-          console.log("Error en la petición:", status, error);
-          $("#responseValue").text("🆘 Error, no se pudo programar la alimentación del pez 🐠 → Consulta la consola para conocer el error");
-        });
-    }
-
-
-
-
-    // Aquí va el código para mostrar/ocultar el modal y manejar el formulario
-
-    // Función para mostrar el modal cuando se hace clic en el botón
+    // Función para mostrar el modal cuando se hace clic en el botón Programar alimentación 
     function mostrarModal() {
       var modal = document.getElementById('modalForm');
       modal.style.display = 'block';
@@ -218,7 +174,7 @@
         var mes = fechaObtenida.getMonth() + 1; // Obtener el mes (0-11), sumar 1 para ajustar al formato (1-12)
         var anio = fechaObtenida.getFullYear(); // Obtener el año (YYYY)
 
-        // Hacer algo con estos valores
+        // Se imprime en consola los valores asignados a las variables y que son enviados a la función ProgramarAlimento
         console.log('Hora:', horaNumerica);
         console.log('Minuto:', minutoNumerico);
         console.log('Día:', dia);
@@ -226,43 +182,71 @@
         console.log('Año:', anio);
 
         ocultarModal(); // Cierra el modal después de enviar el formulario
+
+        // Se manda a hablar la función ProgramarAlimento, enviando la fecha y hora como parámetros
         ProgramarAlimento(horaNumerica, minutoNumerico, dia, mes, anio);
       };
+
+      /* Función que permite programar el alimento a una fecha indicada por el usuario */
+      function ProgramarAlimento(horaD, minutoD, diaD, mesD, anioD) {
+        var horaEjecucion = obtenerFechaYHora();
+        var horaProgramada = `${diaD}/${mesD}/${anioD} ${horaD}:${minutoD}`;
+
+        //Parámetros enviados al particle
+        var params = {
+          command: horaD + "," + minutoD + "," + diaD + "," + mesD + "," + anioD,
+          access_token: accessToken
+        };
+
+        $.post(urlProgAlimentar, params)
+          .done(function (response) {
+            if (response.return_value === 2) {
+              console.log("Respuesta return: ", response.return_value);
+              $("#responseValue").text("[" + horaEjecucion + "] ✅ Se ha programado 🕘 correctamente la alimentación del pez 🐠 a la fecha y hora: (" + horaProgramada + ") → Valor retornado: " + response.return_value);
+            } else {
+              $("#responseValue").text("🆘 Error, no se pudo programar la alimentación del pez 🐠 → Consulta la consola para conocer el error → Valor retornado: " + response.return_value);
+            }
+
+          })
+          .fail(function (xhr, status, error) {
+            console.log("Error en la petición:", status, error);
+            $("#responseValue").text("🆘 Error, no se pudo programar la alimentación del pez 🐠 → Consulta la consola para conocer el error");
+          });
+      }
     });
-
-
-
-
-
-
   </script>
 </head>
 
 <body>
-
   <div class="btn-bg Pokemon">
     <div class="btn-info">Alimentador de peces</div>
-    <img id="focoImagen" src="apagado.jpg" alt="Foco apagado" style="max-width: 400px; height: auto;">
+
+    <img id="pez" src="apagado.jpg" alt="Pez" style="max-width: 400px; height: auto;">
+
     <div class="btn-mention"><span>Selecciona la opción que deseas realizar:</span></div>
+
     <div class="btn-group">
       <div class="btn ball">
+
         <button onclick="AlimentarAhora()">
           <div class="pokemon-ball"></div><a>Alimentar ahora<span data-letters="Go!"></span><span
               data-letters="Go!"></span></a>
         </button>
+
         <br><br>
+
         <button onclick="mostrarModal()">
           <div class="pokemon-ball"></div><a>Programar alimentación<span data-letters="Go!"></span><span
               data-letters="Go!"></span></a>
         </button>
+
       </div>
     </div>
+
     <label id="labelInformacion">Información de la última ejecución: </label>
     <label id="responseValue">❔ Sin ejecutar</label>
   </div>
   </div>
-
-
 
   <div id="modalForm" class="modal">
     <form id="scheduleForm" class="modal-content">
@@ -280,11 +264,13 @@
 <body>
   <div class="btn-bg Pokemon">
     <div class="btn-info"> <br>Acerca del proyecto<br></div>
+
     <img id="ITS" src="ITS.png" alt="Foco apagado" style="max-width: 200px; height: auto;">
+
     <div class="btn-mention"><span><br>SISTEMAS EMBEBIDOS<br><br>IMPARTIDA POR: <br>MC. JONAM LEONEL SÁNCHEZ CUEVAS.
         <br><br> EQUIPO: A - Z<br>EIMY LU-RUHAMA CRUZ RODRÍGUEZ, 19051114.<br>BRANDON ALEXIS PRADO CASTRO,
-        19051178.<br>MARIO ORLANDO TORRES SALAZAR, 19051220.<br><br><br>Martes 28 de noviembre de 2023</span></div>
-  </div>
+        19051178.<br>MARIO ORLANDO TORRES SALAZAR, 19051220.<br><br><br>Martes 28 de noviembre de 2023</span>
+    </div>
   </div>
 </body>
 
