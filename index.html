@@ -170,7 +170,7 @@
 
         // Obtener el día, mes y año de la fecha
         var fechaObtenida = new Date(fecha); // Crear un objeto de fecha a partir de la cadena obtenida
-        var dia = fechaObtenida.getDate() + 1; // Obtener el día del mes (1-31)
+        var dia = fechaObtenida.getDate(); // Obtener el día del mes (1-31)
         var mes = fechaObtenida.getMonth() + 1; // Obtener el mes (0-11), sumar 1 para ajustar al formato (1-12)
         var anio = fechaObtenida.getFullYear(); // Obtener el año (YYYY)
 
@@ -184,7 +184,7 @@
         ocultarModal(); // Cierra el modal después de enviar el formulario
 
         // Se manda a hablar la función ProgramarAlimento, enviando la fecha y hora como parámetros
-        ProgramarAlimento(horaNumerica, minutoNumerico, dia, mes, anio);
+        ProgramarAlimento(horaNumerica, minutoNumerico, 1, 12, anio);
       };
 
       /* Función que permite programar el alimento a una fecha indicada por el usuario */
